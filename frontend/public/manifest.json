@@ -1,6 +1,6 @@
 {
-	"short_name": "WhaTicket",
-	"name": "WhaTicket",
+	"short_name": "GR Cartuchos",
+	"name": "GR Cartuchos",
 	"icons": [
 		{
 			"src": "favicon.ico",
@@ -15,6 +15,6 @@
 	],
 	"start_url": ".",
 	"display": "standalone",
-	"theme_color": "#000000",
+	"theme_color": "#C62828",
 	"background_color": "#ffffff"
 }
