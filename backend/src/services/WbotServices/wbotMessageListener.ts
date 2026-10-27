@@ -447,8 +447,21 @@ const handleMsgAck = async (msg: WbotMessage, ack: MessageAck) => {
 };
 
 const wbotMessageListener = (wbot: Session): void => {
+  wbot.on("message", msg => {
+    logger.info(
+      `[diag] message type=${msg.type} fromMe=${msg.fromMe} domain=${String(msg.from).split("@")[1]} len=${(msg.body || "").length}`
+    );
+  });
+
   wbot.on("message_create", async msg => {
+    logger.info(
+      `[diag] message_create type=${msg.type} fromMe=${msg.fromMe} domain=${String(msg.from).split("@")[1]} valid=${isValidMsg(msg)}`
+    );
     handleMessage(msg, wbot);
+  });
+
+  wbot.on("change_state", state => {
+    logger.info(`[diag] change_state ${state}`);
   });
 
   wbot.on("media_uploaded", async msg => {
