@@ -37,17 +37,10 @@ export const initWbot = async (whatsapp: Whatsapp): Promise<Session> => {
     try {
       const io = getIO();
       const sessionName = whatsapp.name;
-      let sessionCfg;
-
-      if (whatsapp && whatsapp.session) {
-        sessionCfg = JSON.parse(whatsapp.session);
-      }
 
       const args:String = process.env.CHROME_ARGS || "";
 
       const wbot: Session = new Client({
-        // @ts-ignore
-        session: sessionCfg,
         authStrategy: new LocalAuth({clientId: 'bd_'+whatsapp.id}),
         puppeteer: {
           executablePath: process.env.CHROME_BIN || undefined,
@@ -76,7 +69,7 @@ export const initWbot = async (whatsapp: Whatsapp): Promise<Session> => {
         });
       });
 
-      wbot.on("authenticated", async (session: any) => {
+      wbot.on("authenticated", async () => {
         logger.info(`Session: ${sessionName} AUTHENTICATED`);
       });
 

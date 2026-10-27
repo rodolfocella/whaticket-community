@@ -287,6 +287,7 @@ const messages = {
           tickets: "Tickets",
           contacts: "Contatos",
           quickAnswers: "Respostas Rápidas",
+          kanban: "Kanban",
           queues: "Filas",
           administration: "Administração",
           users: "Usuários",
@@ -321,6 +322,14 @@ const messages = {
       },
       queueSelect: {
         inputLabel: "Filas",
+      },
+      kanban: {
+        title: "Kanban",
+        columns: {
+          pending: "Aguardando",
+          open: "Em atendimento",
+          closed: "Resolvidos",
+        },
       },
       quickAnswers: {
         title: "Respostas Rápidas",
