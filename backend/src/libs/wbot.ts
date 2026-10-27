@@ -123,8 +123,15 @@ export const initWbot = async (whatsapp: Whatsapp): Promise<Session> => {
           sessions.push(wbot);
         }
 
-        wbot.sendPresenceAvailable();
-        await syncUnreadMessages(wbot);
+        wbot.sendPresenceAvailable().catch(err => {
+          logger.error(`Session: ${sessionName} presence error: ${err}`);
+        });
+
+        try {
+          await syncUnreadMessages(wbot);
+        } catch (err) {
+          logger.error(`Session: ${sessionName} unread sync failed: ${err}`);
+        }
 
         resolve(wbot);
       });

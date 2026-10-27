@@ -8,6 +8,10 @@ const server = app.listen(process.env.PORT, () => {
   logger.info(`Server started on port: ${process.env.PORT}`);
 });
 
+process.on("unhandledRejection", reason => {
+  logger.error(`Unhandled rejection: ${reason}`);
+});
+
 initIO(server);
 StartAllWhatsAppsSessions();
 gracefulShutdown(server);
