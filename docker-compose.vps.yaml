@@ -6,6 +6,7 @@ services:
       context: ./backend
       dockerfile: Dockerfile.vps
     container_name: gr_whaticket_backend
+    hostname: gr-whaticket
     restart: unless-stopped
     environment:
       - NODE_ENV=production
