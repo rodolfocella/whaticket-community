@@ -19,6 +19,7 @@ services:
       - BACKEND_URL=${BACKEND_URL:?defina BACKEND_URL no .env}
       - FRONTEND_URL=${FRONTEND_URL:?defina FRONTEND_URL no .env}
       - PROXY_PORT=${PROXY_PORT:-443}
+      - CHROME_BIN=/usr/bin/google-chrome-stable
       - CHROME_ARGS=--no-sandbox --disable-setuid-sandbox --disable-dev-shm-usage --disable-gpu
     volumes:
       - whaticket_wwebjs:/usr/src/app/.wwebjs_auth
