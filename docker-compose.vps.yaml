@@ -1,0 +1,51 @@
+name: gr_whaticket
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.vps
+    container_name: gr_whaticket_backend
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - DB_HOST=gr_mysql
+      - DB_USER=${DB_USER:?defina DB_USER no .env}
+      - DB_PASS=${DB_PASS:?defina DB_PASS no .env}
+      - DB_NAME=${DB_NAME:?defina DB_NAME no .env}
+      - JWT_SECRET=${JWT_SECRET:?defina JWT_SECRET no .env}
+      - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET:?defina JWT_REFRESH_SECRET no .env}
+      - BACKEND_URL=${BACKEND_URL:?defina BACKEND_URL no .env}
+      - FRONTEND_URL=${FRONTEND_URL:?defina FRONTEND_URL no .env}
+      - PROXY_PORT=${PROXY_PORT:-443}
+      - CHROME_ARGS=--no-sandbox --disable-setuid-sandbox --disable-dev-shm-usage --disable-gpu
+    volumes:
+      - whaticket_wwebjs:/usr/src/app/.wwebjs_auth
+      - whaticket_public:/usr/src/app/public
+    shm_size: 512m
+    mem_limit: 1536m
+    cpus: 1.0
+    networks:
+      - zap-agenda_zap_net
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: gr_whaticket_frontend
+    restart: unless-stopped
+    environment:
+      - URL_BACKEND=gr_whaticket_backend:3000
+      - REACT_APP_BACKEND_URL=${BACKEND_URL}/
+    mem_limit: 256m
+    networks:
+      - zap-agenda_zap_net
+
+volumes:
+  whaticket_wwebjs:
+  whaticket_public:
+
+networks:
+  zap-agenda_zap_net:
+    external: true

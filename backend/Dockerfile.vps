@@ -1,0 +1,36 @@
+FROM node:18-bookworm-slim
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends wget gnupg ca-certificates dumb-init \
+    && install -d -m 0755 /etc/apt/keyrings \
+    && wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | gpg --dearmor -o /etc/apt/keyrings/google-chrome.gpg \
+    && echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/google-chrome.gpg] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends google-chrome-stable fonts-ipafont-gothic fonts-wqy-zenhei fonts-thai-tlwg fonts-kacst fonts-freefont-ttf libxss1 \
+    && rm -rf /var/lib/apt/lists/*
+
+ENV DOCKERIZE_VERSION=v0.6.1
+RUN wget -q https://github.com/jwilder/dockerize/releases/download/${DOCKERIZE_VERSION}/dockerize-linux-amd64-${DOCKERIZE_VERSION}.tar.gz \
+    && tar -C /usr/local/bin -xzf dockerize-linux-amd64-${DOCKERIZE_VERSION}.tar.gz \
+    && rm dockerize-linux-amd64-${DOCKERIZE_VERSION}.tar.gz
+
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+ENV PUPPETEER_SKIP_DOWNLOAD=true
+
+WORKDIR /usr/src/app
+COPY package*.json ./
+RUN npm install
+
+COPY . .
+RUN npm run build
+
+ENV NODE_ENV=production
+ENV PORT=3000
+ENV CHROME_BIN=google-chrome-stable
+
+EXPOSE 3000
+
+ENTRYPOINT ["dumb-init", "--"]
+CMD dockerize -wait tcp://${DB_HOST}:3306 -timeout 120s \
+  && npx sequelize db:migrate \
+  && node dist/server.js

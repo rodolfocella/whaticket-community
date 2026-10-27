@@ -1,0 +1,71 @@
+# Blocos para /root/gr-cartuchos-site/nginx/grcartuchos.conf (nginx compartilhado, zap_nginx).
+# Passo 1: publicar só o bloco HTTP (ACME). Passo 2: emitir o certificado.
+# Passo 3: publicar os dois blocos HTTPS.
+# O proxy_pass usa variável + resolver de propósito: se os contêineres do Whaticket
+# forem parados ou removidos, o nginx continua subindo/recarregando normalmente.
+
+# ---- 1) HTTP (desafio ACME + redirecionamento) ----
+server {
+  listen 80;
+  server_name atendimento.grcartuchos.com.br atendimento-api.grcartuchos.com.br;
+
+  location ^~ /.well-known/acme-challenge/ {
+    root /var/www/certbot;
+  }
+
+  location / {
+    return 301 https://$host$request_uri;
+  }
+}
+
+# ---- 3) HTTPS: painel ----
+server {
+  listen 443 ssl;
+  http2 on;
+  server_name atendimento.grcartuchos.com.br;
+
+  ssl_certificate     /etc/letsencrypt/live/atendimento.grcartuchos.com.br/fullchain.pem;
+  ssl_certificate_key /etc/letsencrypt/live/atendimento.grcartuchos.com.br/privkey.pem;
+  ssl_protocols       TLSv1.2 TLSv1.3;
+
+  client_max_body_size 50m;
+  resolver 127.0.0.11 valid=30s ipv6=off;
+
+  location / {
+    set $whaticket_front http://gr_whaticket_frontend:80;
+    proxy_pass         $whaticket_front;
+    proxy_http_version 1.1;
+    proxy_set_header   Host $host;
+    proxy_set_header   X-Real-IP $remote_addr;
+    proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header   X-Forwarded-Proto https;
+  }
+}
+
+# ---- 3) HTTPS: API + WebSocket (socket.io) ----
+server {
+  listen 443 ssl;
+  http2 on;
+  server_name atendimento-api.grcartuchos.com.br;
+
+  ssl_certificate     /etc/letsencrypt/live/atendimento.grcartuchos.com.br/fullchain.pem;
+  ssl_certificate_key /etc/letsencrypt/live/atendimento.grcartuchos.com.br/privkey.pem;
+  ssl_protocols       TLSv1.2 TLSv1.3;
+
+  client_max_body_size 50m;
+  resolver 127.0.0.11 valid=30s ipv6=off;
+
+  location / {
+    set $whaticket_back http://gr_whaticket_backend:3000;
+    proxy_pass         $whaticket_back;
+    proxy_http_version 1.1;
+    proxy_set_header   Host $host;
+    proxy_set_header   X-Real-IP $remote_addr;
+    proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header   X-Forwarded-Proto https;
+    proxy_set_header   Upgrade $http_upgrade;
+    proxy_set_header   Connection "upgrade";
+    proxy_read_timeout 3600s;
+    proxy_send_timeout 3600s;
+  }
+}
