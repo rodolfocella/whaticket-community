@@ -46,6 +46,7 @@ export const initWbot = async (whatsapp: Whatsapp): Promise<Session> => {
       const args:String = process.env.CHROME_ARGS || "";
 
       const wbot: Session = new Client({
+        // @ts-ignore
         session: sessionCfg,
         authStrategy: new LocalAuth({clientId: 'bd_'+whatsapp.id}),
         puppeteer: {
@@ -75,7 +76,7 @@ export const initWbot = async (whatsapp: Whatsapp): Promise<Session> => {
         });
       });
 
-      wbot.on("authenticated", async session => {
+      wbot.on("authenticated", async (session: any) => {
         logger.info(`Session: ${sessionName} AUTHENTICATED`);
       });
 
